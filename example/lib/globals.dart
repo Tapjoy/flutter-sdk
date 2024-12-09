@@ -1,0 +1,3 @@
+library;
+
+bool isConnected = false;
