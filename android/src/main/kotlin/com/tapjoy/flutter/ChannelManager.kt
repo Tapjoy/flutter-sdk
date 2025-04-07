@@ -50,7 +50,7 @@ object ChannelManager : EventChannel.StreamHandler {
 
 
     fun sendError(code: Int, message: String, details: String) {
-        eventSink?.error(code.toString(), details, message)
+        eventSink?.error(code.toString(), message, details)
     }
 
     fun teardown() {

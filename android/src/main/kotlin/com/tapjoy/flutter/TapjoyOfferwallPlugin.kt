@@ -14,6 +14,8 @@ import com.tapjoy.TJSetUserIDListener
 import com.tapjoy.TJGetCurrencyBalanceListener
 import com.tapjoy.TJSpendCurrencyListener
 import com.tapjoy.TJAwardCurrencyListener
+import com.tapjoy.TJSetCurrencyAmountRequiredListener
+import com.tapjoy.TJSetCurrencyBalanceListener
 import com.tapjoy.TJStatus
 import com.tapjoy.Tapjoy
 import com.tapjoy.TapjoyPluginAPI
@@ -87,6 +89,9 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
       "clearUserTags" -> clearUserTags(call, result)
       "addUserTag" -> addUserTag(call, result)
       "removeUserTag" -> removeUserTag(call, result)
+      "optOutAdvertisingID" -> optOutAdvertisingID(call, result)
+      "getOptOutAdvertisingID" -> getOptOutAdvertisingID(call, result)
+      "trackPurchase" -> trackPurchase(call, result)
       "getPlacement" -> getPlacement(call, result)
       "requestContent" -> requestContent(call, result)
       "showContent" -> showContent(call, result)
@@ -94,7 +99,8 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
       "isContentAvailable" -> isContentAvailable(call, result)
       "setEntryPoint" -> setEntryPoint(call, result)
       "getEntryPoint" -> getEntryPoint(call, result)
-
+      "setCurrencyBalance" -> setCurrencyBalance(call, result)
+      "setRequiredAmount" -> setRequiredAmount(call, result)
       else -> result.notImplemented()
     }
   }
@@ -302,6 +308,29 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
     return result.success(null)
   }
 
+  private fun optOutAdvertisingID(@NonNull call: MethodCall, @NonNull result: Result) {
+    if (activity == null) {
+      return result.error("ERROR", "Activity is null", null)
+    }
+    var isOptOut = call.argument<Boolean?>("optOut") ?: false
+    Tapjoy.optOutAdvertisingID(activity!!.applicationContext, isOptOut)
+    return result.success(null)
+  }
+
+  private fun getOptOutAdvertisingID(@NonNull call: MethodCall, @NonNull result: Result) {
+    if (activity == null) {
+      return result.error("ERROR", "Activity is null", null)
+    }
+    return result.success(Tapjoy.getOptOutAdvertisingID(activity!!.applicationContext))
+  }
+
+  private fun trackPurchase(@NonNull call: MethodCall, @NonNull result: Result) {
+    var currencyName = call.argument<String?>("currencyCode") ?: return result.error("ERROR", "currencyCode is null", null)
+    var price = call.argument<Double?>("price") ?: return result.error("ERROR", "price is null", null)
+    Tapjoy.trackPurchase(currencyName, price)
+    return result.success(null)
+  }
+
   private fun getPlacement(@NonNull call: MethodCall, @NonNull result: Result) {
     val placementName = call.argument("placementName") as String?
       ?: return result.error("ERROR", "placementName is null", null)
@@ -353,6 +382,65 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
     return result.success(placementMap[placementName]?.entryPoint?.ordinal)
   }
 
+  private fun setCurrencyBalance(@NonNull call: MethodCall, @NonNull result: Result) {
+    val placementName = call.argument("placementName") as String?
+      ?: return result.error("ERROR", "placementName is null", null)
+    val currencyId = call.argument("currencyId") as String?
+      ?: return result.error("ERROR", "currencyId is null", null)
+    val balance = call.argument("currencyBalance") as? Int?
+      ?: return result.error("ERROR", "currencyBalance is null", null)
+    placementMap[placementName]?.setCurrencyBalance(currencyId, balance, object: TJSetCurrencyBalanceListener {
+      override fun onSetCurrencyBalanceSuccess() {
+        val successCallback = call.argument("successCallback") as String?
+          ?: return result.error("ERROR", "successCallback is null", null)
+        ChannelManager.invokeChannelMethod(channelName,
+          successCallback,
+          placementName
+        )
+        return result.success(null)
+      }
+
+      override fun onSetCurrencyBalanceFailure(code: Int, message: String?) {
+        val failureCallback = call.argument("failureCallback") as String?
+          ?: return result.error("ERROR", "failureCallback is null", null)
+        ChannelManager.invokeChannelMethod(channelName,
+          failureCallback,
+          hashMapOf( "placementName" to placementName, "error" to message)
+        )
+        return result.success(null)
+      }
+    })
+  }
+
+  private fun setRequiredAmount(@NonNull call: MethodCall, @NonNull result: Result) {
+    val placementName = call.argument("placementName") as String?
+      ?: return result.error("ERROR", "placementName is null", null)
+    val currencyId = call.argument("currencyId") as String?
+      ?: return result.error("ERROR", "currencyId is null", null)
+    val amountRequired = call.argument("requiredAmount") as? Int?
+      ?: return result.error("ERROR", "requiredAmount is null", null)
+    placementMap[placementName]?.setCurrencyAmountRequired(currencyId, amountRequired, object: TJSetCurrencyAmountRequiredListener {
+      override fun onSetCurrencyAmountRequiredSuccess() {
+        val successCallback = call.argument("successCallback") as String?
+          ?: return result.error("ERROR", "successCallback is null", null)
+        ChannelManager.invokeChannelMethod(channelName,
+          successCallback,
+          placementName
+        )
+        return result.success(null)
+      }
+
+      override fun onSetCurrencyAmountRequiredFailure(code: Int, message: String?) {
+        val failureCallback = call.argument("failureCallback") as String?
+          ?: return result.error("ERROR", "failureCallback is null", null)
+        ChannelManager.invokeChannelMethod(channelName,
+          failureCallback,
+          hashMapOf( "placementName" to placementName, "error" to message)
+        )
+        return result.success(null)
+      }
+    })
+  }
   // endregion
 
   /** region Listeners Setup =====================================================================*/

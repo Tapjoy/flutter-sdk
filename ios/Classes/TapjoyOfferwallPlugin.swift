@@ -3,7 +3,22 @@ import Tapjoy
 import UIKit
 
 public class TapjoyOfferwallPlugin: NSObject, FlutterPlugin, TJPlacementDelegate {
+    enum TapjoyError: Error, LocalizedError {
+        case placementNotFound(String)
+        case invalidArguments
+        case failure(Any?)
 
+        var errorDescription: String? {
+            switch self {
+            case .placementNotFound(let name):
+                return "Placement \"\(name)\" not found"
+            case .invalidArguments:
+                return "Invalid arguments"
+            default:
+                return ""
+            }
+        }
+    }
   static var placementMap = [String: TJPlacement]()
   let channelName = "tapjoy_offerwall"
   var offerwallDiscover = TapjoyOfferwallDiscover()
@@ -20,80 +35,122 @@ public class TapjoyOfferwallPlugin: NSObject, FlutterPlugin, TJPlacementDelegate
     registrar.register(factory, withId: "tapjoy_offerwall_discover")
   }
 
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    switch call.method {
-    case "connect":
-      connect(call.arguments as! [String: Any?], result: result)
-    case "setDebugEnabled":
-      setDebugEnabled(call.arguments as! [String: Any?], result: result)
-    case "isConnected":
-      isConnected(result)
-    case "setUserID":
-      setUserID(call.arguments as! [String: Any?], result: result)
-    case "getUserID":
-      getUserID(result)
-    case "getCurrencyBalance":
-      getCurrencyBalance(result: result)
-    case "spendCurrency":
-      spendCurrency(call.arguments as! [String: Any?], result: result)
-    case "awardCurrency":
-      awardCurrency(call.arguments as! [String: Any?], result: result)
-    case "setUserConsent":
-      setUserConsent(call.arguments as! [String: Any?], result: result)
-    case "getUserConsent":
-      getUserConsent(result)
-    case "setSubjectToGDPR":
-      setSubjectToGDPR(call.arguments as! [String: Any?], result: result)
-    case "getSubjectToGDPR":
-      getSubjectToGDPR(result)
-    case "setBelowConsentAge":
-      setBelowConsentAge(call.arguments as! [String: Any?], result: result)
-    case "getBelowConsentAge":
-      getBelowConsentAge(result)
-    case "setUSPrivacy":
-      setUSPrivacy(call.arguments as! [String: Any?], result: result)
-    case "getUSPrivacy":
-      getUSPrivacy(result)
-    case "setUserLevel":
-        setUserLevel(call.arguments as! [String: Any?], result: result)
-    case "getUserLevel":
-        getUserLevel(result)
-    case "setMaxLevel":
-        setMaxLevel(call.arguments as! [String: Any?], result: result)
-    case "getMaxLevel":
-        getMaxLevel(result)
-    case "setUserSegment":
-        setUserSegment(call.arguments as! [String: Any?], result: result)
-    case "getUserSegment":
-        getUserSegment(result)
-    case "setUserTags":
-        setUserTags(call.arguments as! [String: Any?], result: result)
-    case "getUserTags":
-        getUserTags(result)
-    case "clearUserTags":
-        clearUserTags(result)
-    case "addUserTag":
-        addUserTag(call.arguments as! [String: Any?], result: result)
-    case "removeUserTag":
-        removeUserTag(call.arguments as! [String: Any?], result: result)
-    case "getPlacement":
-      getPlacement(call.arguments as! [String: Any?], result: result)
-    case "requestContent":
-      requestContent(call.arguments as! [String: Any?], result: result)
-    case "showContent":
-      showContent(call.arguments as! [String: Any?], result: result)
-    case "isContentReady":
-      isContentReady(call.arguments as! [String: Any?], result: result)
-    case "isContentAvailable":
-      isContentAvailable(call.arguments as! [String: Any?], result: result)
-    case "setEntryPoint":
-        setEntryPoint(call.arguments as! [String: Any?], result: result)
-    case "getEntryPoint":
-        getEntryPoint(call.arguments as! [String: Any?], result: result)
-    default:
-      result(FlutterMethodNotImplemented)
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        do {
+            try callPlugin(method: call.method, arguments: call.arguments, result: result)
+        } catch let error {
+            emitError(error, arguments: call.arguments, result: result)
+        }
     }
-  }
+
+    private func emitSuccess(withObject callbackObject: Any? = nil,
+                             andReturn returnObject: Any? = nil,
+                             arguments: Any?,
+                             result: @escaping FlutterResult) {
+        guard let args = arguments as? [String: Any],
+            let successCallback = args["successCallback"] as? String else {
+            result("successCallback is nil")
+            return
+        }
+        ChannelManager.shared.invokeChannelMethod(self.channelName, successCallback, arguments: callbackObject)
+        result(returnObject)
+    }
+
+    private func emitError(_ error: Error, arguments: Any?, result: @escaping FlutterResult) {
+        guard let args = arguments as? [String: Any],
+            let failureCallaback = args["failureCallback"] as? String else {
+            result(error.localizedDescription)
+            return
+        }
+        switch error {case TapjoyError.failure(let object):
+            ChannelManager.shared.invokeChannelMethod(channelName, failureCallaback, arguments: object)
+            result(String(describing: object))
+        default:
+            ChannelManager.shared.invokeChannelMethod(channelName, failureCallaback, arguments: error.localizedDescription)
+            result(error.localizedDescription)
+        }
+    }
+
+    private func callPlugin(method: String, arguments: Any?, result: @escaping FlutterResult) throws {
+        switch method {
+        case "connect":
+            connect(arguments as! [String: Any?], result: result)
+        case "setDebugEnabled":
+            setDebugEnabled(arguments as! [String: Any?], result: result)
+        case "isConnected":
+            isConnected(result)
+        case "setUserID":
+            setUserID(arguments as! [String: Any?], result: result)
+        case "getUserID":
+            getUserID(result)
+        case "getCurrencyBalance":
+            getCurrencyBalance(result: result)
+        case "spendCurrency":
+            spendCurrency(arguments as! [String: Any?], result: result)
+        case "awardCurrency":
+            awardCurrency(arguments as! [String: Any?], result: result)
+        case "setUserConsent":
+            setUserConsent(arguments as! [String: Any?], result: result)
+        case "getUserConsent":
+            getUserConsent(result)
+        case "setSubjectToGDPR":
+            setSubjectToGDPR(arguments as! [String: Any?], result: result)
+        case "getSubjectToGDPR":
+            getSubjectToGDPR(result)
+        case "setBelowConsentAge":
+            setBelowConsentAge(arguments as! [String: Any?], result: result)
+        case "getBelowConsentAge":
+            getBelowConsentAge(result)
+        case "setUSPrivacy":
+            setUSPrivacy(arguments as! [String: Any?], result: result)
+        case "getUSPrivacy":
+            getUSPrivacy(result)
+        case "setUserLevel":
+            setUserLevel(arguments as! [String: Any?], result: result)
+        case "getUserLevel":
+            getUserLevel(result)
+        case "setMaxLevel":
+            setMaxLevel(arguments as! [String: Any?], result: result)
+        case "getMaxLevel":
+            getMaxLevel(result)
+        case "setUserSegment":
+            setUserSegment(arguments as! [String: Any?], result: result)
+        case "getUserSegment":
+            getUserSegment(result)
+        case "setUserTags":
+            setUserTags(arguments as! [String: Any?], result: result)
+        case "getUserTags":
+            getUserTags(result)
+        case "clearUserTags":
+            clearUserTags(result)
+        case "addUserTag":
+            addUserTag(arguments as! [String: Any?], result: result)
+        case "removeUserTag":
+            removeUserTag(arguments as! [String: Any?], result: result)
+        case "trackPurchase":
+            try trackPurchase(arguments, result: result)
+        case "getPlacement":
+            getPlacement(arguments as! [String: Any?], result: result)
+        case "requestContent":
+            requestContent(arguments as! [String: Any?], result: result)
+        case "showContent":
+            showContent(arguments as! [String: Any?], result: result)
+        case "isContentReady":
+            isContentReady(arguments as! [String: Any?], result: result)
+        case "isContentAvailable":
+            isContentAvailable(arguments as! [String: Any?], result: result)
+        case "setEntryPoint":
+            setEntryPoint(arguments as! [String: Any?], result: result)
+        case "getEntryPoint":
+            getEntryPoint(arguments as! [String: Any?], result: result)
+        case "setCurrencyBalance":
+            try setCurrencyBalance(arguments, result: result)
+        case "setRequiredAmount":
+            try setRequiredAmount(arguments, result: result)
+        default:
+            result(FlutterMethodNotImplemented)
+        }
+    }
 
   private func connect(_ args: [String: Any?], result: @escaping FlutterResult) {
     NotificationCenter.default.addObserver(
@@ -342,6 +399,16 @@ public class TapjoyOfferwallPlugin: NSObject, FlutterPlugin, TJPlacementDelegate
       result(nil)
   }
 
+  private func trackPurchase(_ args: Any?, result: @escaping FlutterResult) throws {
+       guard let arguments = args as? [String: Any?],
+                let currencyName = arguments["currencyCode"] as? String,
+                let price = arguments["price"] as? Double else {
+              throw TapjoyError.invalidArguments
+          }
+      Tapjoy.trackPurchase(withCurrencyCode: currencyName, price: price)
+      result(nil)
+  }
+
   private func getPlacement(_ args: [String: Any?], result: @escaping FlutterResult) {
     let placementName = args["placementName"] as! String
     let placement = TJPlacement(name: placementName, delegate: self)
@@ -388,6 +455,55 @@ public class TapjoyOfferwallPlugin: NSObject, FlutterPlugin, TJPlacementDelegate
       let entryPoint = TapjoyOfferwallPlugin.placementMap[placementName]?.entryPoint
       result(entryPoint?.rawValue)
   }
+
+    private func setCurrencyBalance(_ args: Any?, result: @escaping FlutterResult) throws {
+        guard let arguments = args as? [String: Any?],
+              let placementName = arguments["placementName"] as? String,
+              let currencyId = arguments["currencyId"] as? String,
+              let currencyBalance = arguments["currencyBalance"] as? Int else {
+            throw TapjoyError.invalidArguments
+        }
+        let placement: TJPlacement = try placementForName(placementName)
+        placement.setBalance(currencyBalance, forCurrencyId: currencyId) { error in
+            if let currencyError = error {
+                self.emitError(TapjoyError.failure(["placementName": placementName, "error": currencyError.localizedDescription]),
+                               arguments: arguments,
+                               result: result)
+                return
+            }
+            self.emitSuccess(withObject: placementName,
+                             arguments: arguments,
+                             result: result)
+        }
+    }
+
+    private func setRequiredAmount(_ args: Any?, result: @escaping FlutterResult) throws {
+        guard let arguments = args as? [String: Any?],
+              let placementName = arguments["placementName"] as? String,
+              let currencyId = arguments["currencyId"] as? String,
+              let amount = arguments["requiredAmount"] as? Int else {
+            throw TapjoyError.invalidArguments
+        }
+        let placement = try placementForName(placementName)
+        placement.setRequiredAmount(amount, forCurrencyId: currencyId) { error in
+            if let currencyError = error {
+                self.emitError(TapjoyError.failure(["placementName": placementName, "error": currencyError.localizedDescription]),
+                               arguments: arguments,
+                               result: result)
+                return
+            }
+            self.emitSuccess(withObject: placementName,
+                             arguments: arguments,
+                             result: result)
+        }
+    }
+
+    private func placementForName(_ name: String) throws -> TJPlacement {
+        guard let placement = TapjoyOfferwallPlugin.placementMap[name] else {
+            throw TapjoyError.placementNotFound(name)
+        }
+        return placement
+    }
 
   public func requestDidSucceed(_ placement: TJPlacement) {
     ChannelManager.shared.invokeChannelMethod(channelName, "onRequestSuccess", arguments: placement.placementName)

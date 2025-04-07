@@ -1,6 +1,7 @@
 import 'models.dart';
 import '../parsers/outgoing_value_parser.dart';
 import '../tapjoy_channel_manager.dart';
+import '../tapjoy_constants.dart';
 
 class TJPlacement {
 
@@ -15,6 +16,10 @@ class TJPlacement {
   TJPlacementOnContentReadyListener? onContentReady;
   TJPlacementOnContentShowListener? onContentShow;
   TJPlacementOnContentDismissListener? onContentDismiss;
+  TJPlacementOnSetCurrencyBalanceSuccessListener? onSetCurrencyBalanceSuccess;
+  TJPlacementOnSetCurrencyBalanceFailureListener? onSetCurrencyBalanceFailure;
+  TJPlacementOnSetRequiredAmountSuccessListener? onSetRequiredAmountSuccess;
+  TJPlacementOnSetRequiredAmountFailureListener? onSetRequiredAmountFailure;
 
   TJPlacement._(this.placementName);
 
@@ -113,5 +118,47 @@ class TJPlacement {
     return entryPointValue == null? null: TJEntryPoint.values[entryPointValue];
   }
 
+  /// Sets the currency balance. Only the balance of self-managed currencies can be set in this way.
+  ///
+  /// Native SDK Reference
+  /// - Android: setCurrencyBalance
+  /// -     iOS: -setBalance:forCurrencyId:withCompletion:
+  Future<void> setCurrencyBalance({required int currencyBalance,
+                                  required String currencyId,
+                                  TJPlacementOnSetCurrencyBalanceSuccessListener? onSuccess,
+                                  TJPlacementOnSetCurrencyBalanceFailureListener? onFailure}) async {
+    onSetCurrencyBalanceSuccess = onSuccess;
+    onSetCurrencyBalanceFailure = onFailure;
+    final args = {
+      TapjoyConstKey.placementName: placementName,
+      TapjoyConstKey.currencyBalance: currencyBalance,
+      TapjoyConstKey.currencyId: currencyId,
+      TapjoyArgument.successCallback: TapjoyCallback.onSetCurrencyBalanceSuccess,
+      TapjoyArgument.failureCallback: TapjoyCallback.onSetCurrencyBalanceFailure
+    };
 
+    return await TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('setCurrencyBalance', args);
+  }
+
+  /// Sets the required amount for the given currency id.
+  ///
+  /// Native SDK Reference
+  /// - Android: setRequiredAmount
+  /// -     iOS: -setRequiredAmount:forCurrencyId:withCompletion:
+  Future<void> setRequiredAmount({required int requiredAmount,
+                                  required String currencyId,
+                                  TJPlacementOnSetRequiredAmountSuccessListener? onSuccess,
+                                  TJPlacementOnSetRequiredAmountFailureListener? onFailure}) async {
+    onSetRequiredAmountSuccess = onSuccess;
+    onSetRequiredAmountFailure = onFailure;
+    final args = {
+      TapjoyConstKey.placementName: placementName,
+      TapjoyConstKey.requiredAmount: requiredAmount,
+      TapjoyConstKey.currencyId: currencyId,
+      TapjoyArgument.successCallback: TapjoyCallback.onSetRequiredAmountSuccess,
+      TapjoyArgument.failureCallback: TapjoyCallback.onSetRequiredAmountFailure
+    };
+
+    return await TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('setRequiredAmount', args);
+  }
 }

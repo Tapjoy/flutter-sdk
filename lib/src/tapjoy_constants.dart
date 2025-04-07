@@ -15,6 +15,9 @@ class TapjoyConstKey {
   static const String gdprApplicable = 'gdprApplicable';
   static const String belowConsentAge = 'belowConsentAge';
   static const String privacyValue = 'privacyValue';
+  static const String optOut = 'optOut';
+  static const String currencyCode = 'currencyCode';
+  static const String price = 'price';
   static const String placementName = 'placementName';
   static const String userLevel = 'userLevel';
   static const String maxUserLevel = 'maxUserLevel';
@@ -22,4 +25,19 @@ class TapjoyConstKey {
   static const String userTags = 'userTags';
   static const String userTag = 'userTag';
   static const String entryPoint = 'entryPoint';
+  static const String currencyBalance = 'currencyBalance';
+  static const String currencyId = 'currencyId';
+  static const String requiredAmount = 'requiredAmount';
+}
+
+class TapjoyArgument {
+  static const String successCallback = 'successCallback';
+  static const String failureCallback = 'failureCallback';
+}
+
+class TapjoyCallback {
+  static const String onSetCurrencyBalanceSuccess = 'TJPlacementOnSetCurrencyBalanceSuccess';
+  static const String onSetCurrencyBalanceFailure = 'TJPlacementOnSetCurrencyBalanceFailure';
+  static const String onSetRequiredAmountSuccess = 'TJPlacementOnSetRequiredAmountSuccess';
+  static const String onSetRequiredAmountFailure = 'TJPlacementOnSetRequiredAmountFailure';
 }

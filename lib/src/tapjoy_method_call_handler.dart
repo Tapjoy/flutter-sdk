@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:tapjoy_offerwall/src/tapjoy_constants.dart';
 import './models/models.dart';
 
 class TapjoyMethodCallHandler {
@@ -60,6 +61,18 @@ class TapjoyMethodCallHandler {
 
       case 'onContentDismiss':
         return onContentDismiss(call.arguments);
+
+      case TapjoyCallback.onSetCurrencyBalanceSuccess:
+        return setCurrencyBalanceSuccess(call.arguments);
+
+      case TapjoyCallback.onSetCurrencyBalanceFailure:
+        return setCurrencyBalanceFailure(call.arguments);
+
+      case TapjoyCallback.onSetRequiredAmountSuccess:
+        return setRequiredAmountSuccess(call.arguments);
+
+      case TapjoyCallback.onSetRequiredAmountFailure:
+        return setRequiredAmountFailure(call.arguments);
 
       default:
         throw UnimplementedError("Method not implemented: ${call.method}");
@@ -164,4 +177,31 @@ class TapjoyMethodCallHandler {
     placement?.onContentDismiss?.call(placement);
   }
 
+  // TJPlacement setCurrencyBalance success
+  static void setCurrencyBalanceSuccess(arguments) {
+    var placement = TJPlacement.findPlacement(arguments);
+    placement?.onSetCurrencyBalanceSuccess?.call(placement);
+  }
+
+  // TJPlacement setCurrencyBalance failure
+  static void setCurrencyBalanceFailure(arguments) {
+    var placementName = arguments["placementName"];
+    var placement = TJPlacement.findPlacement(placementName);
+    var error =  arguments["error"];
+    placement?.onSetCurrencyBalanceFailure?.call(placement, error);
+  }
+
+  // TJPlacement setRequiredAmount success
+  static void setRequiredAmountSuccess(arguments) {
+    var placement = TJPlacement.findPlacement(arguments);
+    placement?.onSetRequiredAmountSuccess?.call(placement);
+  }
+
+  // TJPlacement setRequiredAmount failure
+  static void setRequiredAmountFailure(arguments) {
+    var placementName = arguments["placementName"];
+    var placement = TJPlacement.findPlacement(placementName);
+    var error =  arguments["error"];
+    placement?.onSetRequiredAmountFailure?.call(placement, error);
+  }
 }

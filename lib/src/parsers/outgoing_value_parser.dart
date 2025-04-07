@@ -89,6 +89,14 @@ class OutgoingValueParser {
     return {TapjoyConstKey.privacyValue: privacyValue};
   }
 
+  static optOutAdvertisingID({required bool optOut}) {
+    return {TapjoyConstKey.optOut: optOut};
+  }
+
+  static trackPurchase({required String currencyCode, required double price}) {
+    return {TapjoyConstKey.currencyCode: currencyCode, TapjoyConstKey.price: price};
+  }
+
   static getPlacement({required String placementName}) {
     return {TapjoyConstKey.placementName: placementName};
   }

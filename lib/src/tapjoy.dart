@@ -5,7 +5,7 @@ import 'models/models.dart';
 import 'parsers/incoming_value_parser.dart';
 import 'parsers/outgoing_value_parser.dart';
 
-const flutterPluginVersion = '14.2.1';
+const flutterPluginVersion = '14.3.0';
 const flutterPluginVersionSuffix = '';
 
 class Tapjoy {
@@ -224,6 +224,33 @@ class Tapjoy {
     final args = OutgoingValueParser.removeUserTag(tag: tag);
 
     return TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('removeUserTag', args);
+  }
+
+  /// This is to opt out passing advertising_id param in the subsequent network requests
+  ///
+  /// Native SDK Reference
+  /// - Android: optOutAdvertisingID
+  static Future<void> optOutAdvertisingID(bool optOut){
+    final args = OutgoingValueParser.optOutAdvertisingID(optOut: optOut);
+    return TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('optOutAdvertisingID', args);
+  }
+
+  /// Returns the currently set opt out advertising id value
+  ///
+  /// Native SDK Reference
+  /// - Android: getOptOutAdvertisingID
+  static Future<bool?> getOptOutAdvertisingID(){
+    return TapjoyChannelManager.getChannel(channelName).invokeMethod<bool>('getOptOutAdvertisingID');
+  }
+
+  /// Tracks a purchase
+  ///
+  /// Native SDK Reference
+  /// - Android: trackPurchase
+  /// - iOS: trackPurchase
+  static Future<void> trackPurchase(String currencyCode, double price){
+    final args = OutgoingValueParser.trackPurchase(currencyCode: currencyCode, price: price);
+    return TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('trackPurchase', args);
   }
 
   /// Returns the TJPrivacyPolicy instance for calling methods to set GDPR, User's consent, below consent age ,and US Privacy policy flags.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:developer';
 import 'globals.dart' as globals;
 import 'package:tapjoy_offerwall/tapjoy_offerwall.dart';
+import 'dart:io';
 
 class UserWidget extends StatefulWidget {
   const UserWidget({super.key});
@@ -30,6 +31,8 @@ class _UserWidgetState extends State<UserWidget> {
   TJStatus? _selectedBelowAge;
 
   String _statusMessage = '';
+
+  bool _isOptOutAdIdChecked = false;
 
   @override
   void initState() {
@@ -65,19 +68,22 @@ class _UserWidgetState extends State<UserWidget> {
     });
     log('getUserSegment: ${userSegment.name}.');
 
-    TJStatus? gdpr = await Tapjoy.getPrivacyPolicy().getSubjectToGDPR() ?? TJStatus.unknownStatus;
+    TJStatus? gdpr = await Tapjoy.getPrivacyPolicy().getSubjectToGDPR() ??
+        TJStatus.unknownStatus;
     log('tjPrivacyPolicy.getSubjectToGDPR: ${gdpr.toString()}');
     setState(() {
       _selectedGPDR = gdpr;
     });
 
-    TJStatus? consent = await Tapjoy.getPrivacyPolicy().getUserConsent() ?? TJStatus.unknownStatus;
+    TJStatus? consent = await Tapjoy.getPrivacyPolicy().getUserConsent() ??
+        TJStatus.unknownStatus;
     log('tjPrivacyPolicy.getUserConsent: ${consent.toString()}');
     setState(() {
       _selectedConsent = consent;
     });
 
-    TJStatus? belowAge = await Tapjoy.getPrivacyPolicy().getBelowConsentAge() ?? TJStatus.unknownStatus;
+    TJStatus? belowAge = await Tapjoy.getPrivacyPolicy().getBelowConsentAge() ??
+        TJStatus.unknownStatus;
     log('tjPrivacyPolicy.getBelowConsentAge: ${belowAge.toString()}');
     setState(() {
       _selectedBelowAge = belowAge;
@@ -90,6 +96,13 @@ class _UserWidgetState extends State<UserWidget> {
         _usPrivacyController.text = usPrivacy;
       });
     }
+
+    if(Platform.isAndroid) {
+      bool isOptOutAdId = await getOptOutAdId();
+      setState(() {
+        _isOptOutAdIdChecked = isOptOutAdId;
+      });
+    }
   }
 
   void setUserInfo() {
@@ -97,7 +110,7 @@ class _UserWidgetState extends State<UserWidget> {
         userId: _userIdController.text,
         onSetUserIDSuccess: () => setState(() {
               log('onSetUserIDSuccess');
-              _statusMessage = 'User ID Set';
+              _statusMessage = 'User ID Set: ${_userIdController.text}';
             }),
         onSetUserIDFailure: (error) => setState(() {
               log('onSetUserIDFailure: $error');
@@ -217,10 +230,21 @@ class _UserWidgetState extends State<UserWidget> {
     }
   }
 
+  Future<void> setOptOutAdId(bool optOut) async {
+    Tapjoy.optOutAdvertisingID(optOut);
+    setState(() {
+      _isOptOutAdIdChecked = optOut;
+    });
+  }
+
+  Future<bool> getOptOutAdId() async {
+    return await Tapjoy.getOptOutAdvertisingID() ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final ButtonStyle compactButtonStyle = ElevatedButton.styleFrom(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
     );
     return Scaffold(
       body: Column(children: <Widget>[
@@ -303,18 +327,28 @@ class _UserWidgetState extends State<UserWidget> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        fixedSize: const Size(170, 34)),
-                    onPressed: globals.isConnected ? () => setUserInfo() : null,
-                    child: const Text('Set'),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: ElevatedButton(
+                        style: compactButtonStyle,
+                        onPressed:
+                            () => setUserInfo(),
+                        child: const Text('Set'),
+                      ),
+                    ),
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        fixedSize: const Size(170, 34)),
-                    onPressed:
-                        globals.isConnected ? () => clearUserInfo() : null,
-                    child: const Text('Clear'),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: ElevatedButton(
+                        style: compactButtonStyle,
+                        onPressed:
+                             () => clearUserInfo(),
+                        child: const Text('Clear'),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -335,27 +369,52 @@ class _UserWidgetState extends State<UserWidget> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    style: compactButtonStyle,
-                    onPressed: globals.isConnected ? () => setUserTags() : null,
-                    child: const Text('Set Tags'),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: ElevatedButton(
+                        style: compactButtonStyle,
+                        onPressed:
+                            () => setUserTags(),
+                        child: const Text('Set Tags'),
+                      ),
+                    ),
                   ),
-                  ElevatedButton(
-                    style: compactButtonStyle,
-                    onPressed: globals.isConnected ? () => addUserTag() : null,
-                    child: const Text('Add'),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: ElevatedButton(
+                        style: compactButtonStyle,
+                        onPressed:
+                            () => addUserTag(),
+                        child: const Text('Add'),
+                      ),
+                    ),
                   ),
-                  ElevatedButton(
-                    style: compactButtonStyle,
-                    onPressed:
-                        globals.isConnected ? () => removeUserTag() : null,
-                    child: const Text('Remove'),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: ElevatedButton(
+                        style: compactButtonStyle,
+                        onPressed:
+                          () => removeUserTag(),
+                        child: const Text('Remove'),
+                      ),
+                    ),
                   ),
-                  ElevatedButton(
-                    style: compactButtonStyle,
-                    onPressed:
-                        globals.isConnected ? () => clearUserTags() : null,
-                    child: const Text('Clear'),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: ElevatedButton(
+                        style: compactButtonStyle,
+                        onPressed:
+                          () => clearUserTags(),
+                        child: const Text('Clear'),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -455,11 +514,28 @@ class _UserWidgetState extends State<UserWidget> {
                   ElevatedButton(
                     style: compactButtonStyle,
                     onPressed:
-                        globals.isConnected ? () => setUSPrivacy() : null,
+                        () => setUSPrivacy(),
                     child: const Text('Set'),
                   ),
                 ],
               ),
+              if (Platform.isAndroid)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const Padding(
+                        padding: EdgeInsets.only(left: 4, top: 8),
+                        child: Text("Opt Out Advertising ID")),
+                    Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Checkbox(
+                          value: _isOptOutAdIdChecked,
+                          onChanged: (bool? value) {
+                            setOptOutAdId(value!);
+                          },
+                        )),
+                  ],
+                )
             ],
           )),
         ),

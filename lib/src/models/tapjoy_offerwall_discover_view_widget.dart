@@ -24,7 +24,12 @@ class _TJOfferwallDiscoverViewWidget extends State<TJOfferwallDiscoverViewWidget
           surfaceFactory: (context, controller) {
             return AndroidViewSurface(
               controller: controller as AndroidViewController,
-              gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+              gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                Factory<HorizontalDragGestureRecognizer>(
+                  () => HorizontalDragGestureRecognizer(),
+                ),
+                Factory<TapGestureRecognizer>(() => TapGestureRecognizer()),
+              },
               hitTestBehavior: PlatformViewHitTestBehavior.opaque,
             );
           },
@@ -47,6 +52,12 @@ class _TJOfferwallDiscoverViewWidget extends State<TJOfferwallDiscoverViewWidget
         return UiKitView(
           viewType: viewType,
           layoutDirection: TextDirection.ltr,
+          gestureRecognizers: <Factory<OneSequenceGestureRecognizer>> {
+            Factory<HorizontalDragGestureRecognizer>(
+              () => HorizontalDragGestureRecognizer(),
+            ),
+            Factory<TapGestureRecognizer>(() => TapGestureRecognizer()),
+          },
           creationParams: creationParams,
           creationParamsCodec: const StandardMessageCodec(),
         );

@@ -44,5 +44,5 @@ flutter {
 
 dependencies {
     // Tapjoy SDK
-    implementation 'com.tapjoy:tapjoy-android-sdk:14.2.1'
+    implementation 'com.tapjoy:tapjoy-android-sdk:14.3.0'
 }

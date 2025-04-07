@@ -38,3 +38,31 @@ typedef TJPlacementOnContentShowListener = Function(TJPlacement placement);
 /// -     iOS: onContentDismiss
 typedef TJPlacementOnContentDismissListener = Function(TJPlacement placement);
 
+/// Invoked when the SDK completes the setCurrencyBalance successfully for a given [placement].
+///
+/// Native SDK Reference
+/// - Android: onSetCurrencyBalanceSuccess
+/// -     iOS: -setBalance:forCurrencyId:withCompletion:
+typedef TJPlacementOnSetCurrencyBalanceSuccessListener = Function(TJPlacement placement);
+
+/// Invoked when the SDK failes the setCurrencyBalance operation for a given [placement].
+///
+/// Native SDK Reference
+/// - Android: onSetCurrencyBalanceFailure
+/// -     iOS: -setBalance:forCurrencyId:withCompletion:
+typedef TJPlacementOnSetCurrencyBalanceFailureListener = Function(TJPlacement placement, String? error);
+
+
+/// Invoked when the SDK completes the setRequiredAmount successfully for a given [placement].
+///
+/// Native SDK Reference
+/// - Android: onSetCurrencyAmountRequiredSuccess
+/// -     iOS: -setRequiredAmount:forCurrencyId:withCompletion:
+typedef TJPlacementOnSetRequiredAmountSuccessListener = Function(TJPlacement placement);
+
+/// Invoked when the SDK failes the setRequiredAmount operation for a given [placement].
+///
+/// Native SDK Reference
+/// - Android: onSetCurrencyAmountRequiredFailure
+/// -     iOS: -setRequiredAmount:forCurrencyId:withCompletion:
+typedef TJPlacementOnSetRequiredAmountFailureListener = Function(TJPlacement placement, String? error);
