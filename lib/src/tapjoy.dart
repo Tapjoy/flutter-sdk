@@ -5,7 +5,7 @@ import 'models/models.dart';
 import 'parsers/incoming_value_parser.dart';
 import 'parsers/outgoing_value_parser.dart';
 
-const flutterPluginVersion = '14.3.0';
+const flutterPluginVersion = '14.3.1';
 const flutterPluginVersionSuffix = '';
 
 class Tapjoy {

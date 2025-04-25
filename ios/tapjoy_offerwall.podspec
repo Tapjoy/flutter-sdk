@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'tapjoy_offerwall'
-  s.version          = '14.3.0'
+  s.version          = '14.3.1'
   s.summary          = 'Flutter Plugin for Tapjoy SDK.'
   s.description      = <<-DESC
 A new Flutter plugin project.
@@ -22,7 +22,7 @@ A new Flutter plugin project.
   s.swift_version = '5.0'
 
   # Tapjoy
-  s.dependency 'TapjoySDK', '14.3.0'
+  s.dependency 'TapjoySDK', '14.3.1'
   s.static_framework = true
 
 end
