@@ -244,7 +244,7 @@ class _UserWidgetState extends State<UserWidget> {
   @override
   Widget build(BuildContext context) {
     final ButtonStyle compactButtonStyle = ElevatedButton.styleFrom(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 10),
     );
     return Scaffold(
       body: Column(children: <Widget>[
@@ -257,7 +257,7 @@ class _UserWidgetState extends State<UserWidget> {
                 children: [
                   Flexible(
                     child: Padding(
-                        padding: const EdgeInsets.only(top: 8, bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 20,  vertical: 8),
                         child: TextField(
                           controller: _userIdController,
                           decoration: const InputDecoration(
@@ -271,7 +271,7 @@ class _UserWidgetState extends State<UserWidget> {
                 children: [
                   Flexible(
                     child: Padding(
-                        padding: const EdgeInsets.only(top: 8, bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 20,  vertical: 8),
                         child: TextField(
                           controller: _userLevelController,
                           keyboardType: TextInputType.number,
@@ -286,7 +286,7 @@ class _UserWidgetState extends State<UserWidget> {
                 children: [
                   Flexible(
                     child: Padding(
-                        padding: const EdgeInsets.only(top: 8, bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 20,  vertical: 8),
                         child: TextField(
                           controller: _maxUserLevelController,
                           keyboardType: TextInputType.number,
@@ -300,11 +300,11 @@ class _UserWidgetState extends State<UserWidget> {
               Row(
                 children: [
                   const Padding(
-                      padding: EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.only(left: 20),
                       child: Text("User Segment:")),
                   Flexible(
                       child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8, right: 20),
                     child: DropdownButton<TJSegment>(
                       value: _selectedSegment,
                       isExpanded: true,
@@ -329,7 +329,7 @@ class _UserWidgetState extends State<UserWidget> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
+                      padding: const EdgeInsets.only(left: 20, bottom: 10),
                       child: ElevatedButton(
                         style: compactButtonStyle,
                         onPressed:
@@ -341,7 +341,7 @@ class _UserWidgetState extends State<UserWidget> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
+                      padding: const EdgeInsets.only(right: 20, bottom: 10),
                       child: ElevatedButton(
                         style: compactButtonStyle,
                         onPressed:
@@ -356,7 +356,7 @@ class _UserWidgetState extends State<UserWidget> {
                 children: [
                   Flexible(
                     child: Padding(
-                        padding: const EdgeInsets.only(top: 20, bottom: 10),
+                        padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 10),
                         child: TextField(
                           controller: _userTagController,
                           decoration: const InputDecoration(
@@ -371,7 +371,7 @@ class _UserWidgetState extends State<UserWidget> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
+                      padding: const EdgeInsets.only(left: 20, top: 20, bottom: 10),
                       child: ElevatedButton(
                         style: compactButtonStyle,
                         onPressed:
@@ -383,7 +383,7 @@ class _UserWidgetState extends State<UserWidget> {
                   const SizedBox(width: 5),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
+                      padding: const EdgeInsets.only(top: 20, bottom: 10),
                       child: ElevatedButton(
                         style: compactButtonStyle,
                         onPressed:
@@ -395,7 +395,7 @@ class _UserWidgetState extends State<UserWidget> {
                   const SizedBox(width: 5),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
+                      padding: const EdgeInsets.only(top: 20, bottom: 10),
                       child: ElevatedButton(
                         style: compactButtonStyle,
                         onPressed:
@@ -407,7 +407,7 @@ class _UserWidgetState extends State<UserWidget> {
                   const SizedBox(width: 5),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
+                      padding: const EdgeInsets.only(right: 20, top: 20, bottom: 10),
                       child: ElevatedButton(
                         style: compactButtonStyle,
                         onPressed:
@@ -421,11 +421,11 @@ class _UserWidgetState extends State<UserWidget> {
               Row(
                 children: [
                   const Padding(
-                      padding: EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.only(left: 20),
                       child: Text("Subject to GDPR:")),
                   Flexible(
                       child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8, right: 20),
                     child: DropdownButton<TJStatus>(
                       value: _selectedGPDR,
                       isExpanded: true,
@@ -448,11 +448,11 @@ class _UserWidgetState extends State<UserWidget> {
               Row(
                 children: [
                   const Padding(
-                      padding: EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.only(left: 20),
                       child: Text("User Consent:")),
                   Flexible(
                       child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8, right: 20),
                     child: DropdownButton<TJStatus>(
                       value: _selectedConsent,
                       isExpanded: true,
@@ -475,11 +475,11 @@ class _UserWidgetState extends State<UserWidget> {
               Row(
                 children: [
                   const Padding(
-                      padding: EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.only(left: 20),
                       child: Text("Below Consent Age:")),
                   Flexible(
                       child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8, right: 20),
                     child: DropdownButton<TJStatus>(
                       value: _selectedBelowAge,
                       isExpanded: true,
@@ -500,10 +500,11 @@ class _UserWidgetState extends State<UserWidget> {
                 ],
               ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Flexible(
                     child: Padding(
-                        padding: const EdgeInsets.only(top: 8, right: 20),
+                        padding: const EdgeInsets.only(left: 20, top: 8, right: 20),
                         child: TextField(
                           controller: _usPrivacyController,
                           decoration: const InputDecoration(
@@ -511,12 +512,15 @@ class _UserWidgetState extends State<UserWidget> {
                               labelText: 'US Privacy'),
                         )),
                   ),
-                  ElevatedButton(
-                    style: compactButtonStyle,
-                    onPressed:
-                        () => setUSPrivacy(),
-                    child: const Text('Set'),
-                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: ElevatedButton(
+                      style: compactButtonStyle,
+                      onPressed:
+                          () => setUSPrivacy(),
+                      child: const Text('Set'),
+                    ),
+                  )
                 ],
               ),
               if (Platform.isAndroid)
@@ -524,7 +528,7 @@ class _UserWidgetState extends State<UserWidget> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     const Padding(
-                        padding: EdgeInsets.only(left: 4, top: 8),
+                        padding: EdgeInsets.only(left: 20, top: 8),
                         child: Text("Opt Out Advertising ID")),
                     Padding(
                         padding: const EdgeInsets.only(top: 8),

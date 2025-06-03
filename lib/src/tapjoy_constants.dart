@@ -28,6 +28,8 @@ class TapjoyConstKey {
   static const String currencyBalance = 'currencyBalance';
   static const String currencyId = 'currencyId';
   static const String requiredAmount = 'requiredAmount';
+  static const String loggingLevel = 'loggingLevel';
+  static const String customParameter = 'customParameter';
 }
 
 class TapjoyArgument {

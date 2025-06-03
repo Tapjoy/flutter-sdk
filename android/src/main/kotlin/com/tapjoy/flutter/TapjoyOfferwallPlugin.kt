@@ -17,6 +17,7 @@ import com.tapjoy.TJAwardCurrencyListener
 import com.tapjoy.TJSetCurrencyAmountRequiredListener
 import com.tapjoy.TJSetCurrencyBalanceListener
 import com.tapjoy.TJStatus
+import com.tapjoy.TJLogLevel
 import com.tapjoy.Tapjoy
 import com.tapjoy.TapjoyPluginAPI
 import io.flutter.embedding.android.FlutterActivity
@@ -62,7 +63,6 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when (call.method) {
-      "setDebugEnabled" -> setDebugEnabled(call, result)
       "isConnected" -> isConnected(result)
       "connect" -> connect(call, result)
       "setUserID" -> setUserID(call, result)
@@ -101,17 +101,35 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
       "getEntryPoint" -> getEntryPoint(call, result)
       "setCurrencyBalance" -> setCurrencyBalance(call, result)
       "setRequiredAmount" -> setRequiredAmount(call, result)
+      "setLoggingLevel" -> setLoggingLevel(call, result)
+      "getLoggingLevel" -> getLoggingLevel(result)
+      "setCustomParameter" -> setCustomParameter(call, result)
+      "getCustomParameter" -> getCustomParameter(call, result)
       else -> result.notImplemented()
     }
   }
 
-    /** region Base API ============================================================================*/
-    private fun setDebugEnabled(@NonNull call: MethodCall, @NonNull result: Result) {
-      val isEnabled = call.argument("debugEnabled") as Boolean?
-        ?: return result.error("ERROR", "debugEnabled is null", null)
-      Tapjoy.setDebugEnabled(isEnabled)
-      return result.success(null)
+  /** region Base API ============================================================================*/
+  private fun setLoggingLevel(@NonNull call: MethodCall, @NonNull result: Result) {
+    val loggingLevel = call.argument("loggingLevel") as Int?
+      ?: return result.error("ERROR", "loggingLevel is null", null)
+    when (loggingLevel) {
+      0 -> Tapjoy.setLoggingLevel(TJLogLevel.ERROR)
+      1 -> Tapjoy.setLoggingLevel(TJLogLevel.WARNING)
+      2 -> Tapjoy.setLoggingLevel(TJLogLevel.INFO)
+      3 -> Tapjoy.setLoggingLevel(TJLogLevel.DEBUG)
     }
+    return result.success(null)
+  }
+
+  private fun getLoggingLevel(@NonNull result: Result) {
+    when (Tapjoy.getLoggingLevel()) {
+      TJLogLevel.ERROR -> result.success(0)
+      TJLogLevel.WARNING -> result.success(1)
+      TJLogLevel.INFO -> result.success(2)
+      TJLogLevel.DEBUG -> result.success(3)
+    }
+  }
 
   private fun isConnected(@NonNull result: Result) {
     return result.success(Tapjoy.isConnected())
@@ -150,6 +168,16 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
 
   private fun getUserID(@NonNull call: MethodCall, @NonNull result: Result) {
     return result.success(Tapjoy.getUserID())
+  }
+
+  private fun setCustomParameter(@NonNull call: MethodCall, @NonNull result: Result) {
+    val customParameter = call.argument("customParameter") as String?
+    Tapjoy.setCustomParameter(customParameter)
+    return result.success(null)
+  }
+
+  private fun getCustomParameter(@NonNull call: MethodCall, @NonNull result: Result) {
+    return result.success(Tapjoy.getCustomParameter())
   }
 
   private fun getCurrencyBalance(@NonNull call: MethodCall, @NonNull result: Result) {    

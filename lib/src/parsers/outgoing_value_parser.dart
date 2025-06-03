@@ -25,10 +25,6 @@ class OutgoingValueParser {
     return {TapjoyConstKey.userId: userId};
   }
 
-  static setDebugEnabled({required bool debugEnabled}) {
-    return {TapjoyConstKey.debugEnabled: debugEnabled};
-  }
-
   static setUserID({required String? userId}) {
     return {TapjoyConstKey.userId: userId};
   }

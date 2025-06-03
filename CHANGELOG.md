@@ -1,3 +1,10 @@
+## 14.4.0
+ - iOS SDK 14.4.0
+ - Android SDK 14.4.0
+ - Added custom parameter  API.
+ - Added logging level API.
+ - Android target API is now 35.
+
 ## 14.3.1
 - iOS SDK 14.3.1
 - Android SDK 14.3.1

@@ -88,10 +88,10 @@ class _ConfigWidgetState extends State<ConfigWidget> {
                 children: [
                   Padding(
                       padding: const EdgeInsets.only(
-                          left: 10.0, right: 10.0, bottom: 10.0),
+                          left: 20, right: 20, bottom: 10),
                       child: Text(_statusMessage)),
                   Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
+                      padding: const EdgeInsets.only(left: 10, bottom: 10),
                       child: Row(
                         children: [
                           Checkbox(
@@ -102,25 +102,29 @@ class _ConfigWidgetState extends State<ConfigWidget> {
                           const Text('Auto Connect')
                         ],
                       )),
-                  Autocomplete<String>(fieldViewBuilder: (BuildContext context,
-                      TextEditingController sdkEditingController,
-                      FocusNode fieldFocusNode,
-                      VoidCallback onFieldSubmitted) {
-                    _sdkKeyController = sdkEditingController;
-                    return TextField(
-                      controller: sdkEditingController,
-                      focusNode: fieldFocusNode,
-                      decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: "Enter SDK Key"),
-                    );
-                  }, optionsBuilder: (TextEditingValue textEditingValue) async {
-                    return await getSdkList();
-                  }, onSelected: (String selection) {
-                    addSdkKey(selection);
-                  }),
                   Padding(
-                    padding: const EdgeInsets.only(top: 10.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child:
+                    Autocomplete<String>(fieldViewBuilder: (BuildContext context,
+                        TextEditingController sdkEditingController,
+                        FocusNode fieldFocusNode,
+                        VoidCallback onFieldSubmitted) {
+                      _sdkKeyController = sdkEditingController;
+                      return TextField(
+                        controller: sdkEditingController,
+                        focusNode: fieldFocusNode,
+                        decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: "Enter SDK Key"),
+                      );
+                      }, optionsBuilder: (TextEditingValue textEditingValue) async {
+                      return await getSdkList();
+                      }, onSelected: (String selection) {
+                      addSdkKey(selection);
+                    }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20, top: 10),
                     child: Row(
                       children: [
                         ElevatedButton(
@@ -129,7 +133,7 @@ class _ConfigWidgetState extends State<ConfigWidget> {
                           child: const Text('Add'),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
+                          padding: const EdgeInsets.only(left: 8),
                           child: ElevatedButton(
                             style: compactButtonStyle,
                             onPressed: () => _sdkKeyController.clear(),

@@ -123,100 +123,99 @@ class _OfferwallDiscoverWidgetState extends State<OfferwallDiscoverWidget> {
     );
     _currentOrientation = MediaQuery.of(context).orientation;
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(10.0),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      body: ListView(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Center(
               child: Text(_statusMessage),
             ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: _widthTextController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Width',
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: TextField(
+                    controller: _widthTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Width',
                     ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: _heightTextController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Height',
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      style: compactButtonStyle,
-                      onPressed: resizeView,
-                      child: const Text('Resize'),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                textInputAction: TextInputAction.newline,
-                controller: _offerwallDiscoverPlacementTextController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Placement Name',
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  style: compactButtonStyle,
-                  onPressed: loadOfferwallDiscover,
-                  child: const Text('Request'),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: TextField(
+                    controller: _heightTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Height',
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                  ),
                 ),
-                ElevatedButton(
-                  style: compactButtonStyle,
-                  onPressed: clearOfferwallDiscover,
-                  child: const Text('Clear'),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: ElevatedButton(
+                    style: compactButtonStyle,
+                    onPressed: resizeView,
+                    child: const Text('Resize'),
+                  ),
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: TextField(
+              textInputAction: TextInputAction.newline,
+              controller: _offerwallDiscoverPlacementTextController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Placement Name',
+              ),
             ),
-            const SizedBox(height: 20),
-            Container(
-              color: Colors.grey,
-              width: _width,
-              height: _height,
-              child: _showOfferwallDiscover
-                  ? const TJOfferwallDiscoverViewWidget()
-                  : const Center(child: Text("Offerwall Discover")),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                style: compactButtonStyle,
+                onPressed: loadOfferwallDiscover,
+                child: const Text('Request'),
+              ),
+              ElevatedButton(
+                style: compactButtonStyle,
+                onPressed: clearOfferwallDiscover,
+                child: const Text('Clear'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            color: Colors.grey,
+            width: _width,
+            height: _height,
+            child: _showOfferwallDiscover
+                ? const TJOfferwallDiscoverViewWidget()
+                : const Center(child: Text("Offerwall Discover")),
+          ),
+        ],
       ),
     );
   }

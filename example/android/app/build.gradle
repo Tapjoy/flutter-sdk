@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace "com.tapjoy.flutter.tapjoy.tapjoy_offerwall_example"
-    compileSdkVersion 34
+    compileSdkVersion 35
 
     defaultConfig {
         applicationId "com.tapjoy.flutter.tapjoy.tapjoy_offerwall_example"
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 1
         versionName "1"
     }
@@ -44,5 +44,5 @@ flutter {
 
 dependencies {
     // Tapjoy SDK
-    implementation 'com.tapjoy:tapjoy-android-sdk:14.3.1'
+    implementation 'com.tapjoy:tapjoy-android-sdk:14.4.0'
 }

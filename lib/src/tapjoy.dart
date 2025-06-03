@@ -2,10 +2,11 @@ import 'dart:async';
 import './tapjoy_channel_manager.dart';
 import 'tapjoy_method_call_handler.dart';
 import 'models/models.dart';
+import 'tapjoy_constants.dart';
 import 'parsers/incoming_value_parser.dart';
 import 'parsers/outgoing_value_parser.dart';
 
-const flutterPluginVersion = '14.3.1';
+const flutterPluginVersion = '14.4.0';
 const flutterPluginVersionSuffix = '';
 
 class Tapjoy {
@@ -28,15 +29,35 @@ class Tapjoy {
     return TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('connect', args);
   }
 
+  /// Sets the logging level for the Tapjoy SDK.
+  ///
+  /// Native SDK Reference
+  /// - Android: setLoggingLevel
+  /// -     iOS: loggingLevel
+  static Future<void> setLoggingLevel(TJLoggingLevel loggingLevel) async {
+    return TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('setLoggingLevel', {
+      TapjoyConstKey.loggingLevel: loggingLevel.index
+    });
+  }
+
+  /// Gets the current logging level.
+  ///
+  /// Native SDK Reference
+  /// - Android: getLoggingLevel
+  /// -     iOS: loggingLevel
+  static Future<TJLoggingLevel> getLoggingLevel() async {
+    final result = await TapjoyChannelManager.getChannel(channelName).invokeMethod<int>('getLoggingLevel') ?? TJLoggingLevel.error.index;
+    return TJLoggingLevel.values[result];
+  }
+
   /// Enable/disable Tapjoy SDK debug mode [debugEnabled].
   ///
   /// Native SDK Reference
   /// - Android: setDebugEnabled
   /// -     iOS: setDebugEnabled
+  @Deprecated('Deprecated in 14.4.0. Use setLoggingLevel instead.')
   static Future<void> setDebugEnabled(bool debugEnabled) async {
-    final args = OutgoingValueParser.setDebugEnabled(debugEnabled: debugEnabled);
-
-    return TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('setDebugEnabled', args);
+    return setLoggingLevel(debugEnabled ? TJLoggingLevel.debug : TJLoggingLevel.error);
   }
 
   /// Helper function to check if SDK is initialized.
@@ -70,6 +91,26 @@ class Tapjoy {
   /// -     iOS: getUserID
   static Future<String?> getUserID(){
     return TapjoyChannelManager.getChannel(channelName).invokeMethod<String?>('getUserID');
+  }
+
+  /// Set custom parameter with [parameter]
+  ///
+  /// Native SDK Reference
+  /// - Android: setCustomParameter
+  /// -     iOS: customParameter
+  static Future<void>setCustomParameter(String? parameter){
+    return TapjoyChannelManager.getChannel(channelName).invokeMethod<void>('setCustomParameter', {  
+      TapjoyConstKey.customParameter: parameter
+    });
+  }
+
+  /// Gets the custom parameter
+  ///
+  /// Native SDK Reference
+  /// - Android: getCustomParameter
+  /// -     iOS: customParameter
+  static Future<String?> getCustomParameter(){
+    return TapjoyChannelManager.getChannel(channelName).invokeMethod<String?>('getCustomParameter');
   }
 
   /// Gets currency balance, [onGetCurrencyBalanceSuccess] callback will be called on successfull call. [onGetCurrencyBalanceFailure] callback will be called otherwise.

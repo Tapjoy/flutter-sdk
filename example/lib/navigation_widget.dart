@@ -27,7 +27,6 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(toolbarHeight: 15),
       body: SafeArea(
-        minimum: const EdgeInsets.all(20),
         child: _children[_currentIndex],
       ),
       bottomNavigationBar: NavigationBar(

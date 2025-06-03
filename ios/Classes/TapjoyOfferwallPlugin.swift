@@ -75,8 +75,6 @@ public class TapjoyOfferwallPlugin: NSObject, FlutterPlugin, TJPlacementDelegate
         switch method {
         case "connect":
             connect(arguments as! [String: Any?], result: result)
-        case "setDebugEnabled":
-            setDebugEnabled(arguments as! [String: Any?], result: result)
         case "isConnected":
             isConnected(result)
         case "setUserID":
@@ -147,6 +145,14 @@ public class TapjoyOfferwallPlugin: NSObject, FlutterPlugin, TJPlacementDelegate
             try setCurrencyBalance(arguments, result: result)
         case "setRequiredAmount":
             try setRequiredAmount(arguments, result: result)
+        case "setLoggingLevel":
+            setLoggingLevel(arguments, result: result)
+        case "getLoggingLevel":
+            getLoggingLevel(result)
+        case "setCustomParameter":
+            setCustomParameter(arguments, result: result)
+        case "getCustomParameter":
+            getCustomParameter(result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -202,9 +208,19 @@ public class TapjoyOfferwallPlugin: NSObject, FlutterPlugin, TJPlacementDelegate
       self, name: NSNotification.Name(TJC_CONNECT_WARNING), object: nil)
   }
 
-  private func setDebugEnabled(_ args: [String: Any?], result: @escaping FlutterResult) {
-    Tapjoy.setDebugEnabled(args["debugEnabled"] as! Bool)
+  private func setLoggingLevel(_ args: Any?, result: @escaping FlutterResult) {
+    guard let args = args as? [String: Any?],
+          let level = args["loggingLevel"] as? Int,
+          let loggingLevel = TJLoggerLevel(rawValue: level) else {
+      result(FlutterError(code: "INVALID_ARGUMENTS", message: "Invalid arguments", details: nil))
+      return
+    }
+    Tapjoy.loggingLevel = loggingLevel
     result(nil)
+  }
+
+  private func getLoggingLevel(_ result: @escaping FlutterResult) {
+    result(Tapjoy.loggingLevel.rawValue)
   }
 
   private func isConnected(_ result: @escaping FlutterResult) {
@@ -225,6 +241,20 @@ public class TapjoyOfferwallPlugin: NSObject, FlutterPlugin, TJPlacementDelegate
 
   private func getUserID(_ result: @escaping FlutterResult) {
       result(Tapjoy.getUserID())
+  }
+
+  private func setCustomParameter(_ args: Any?, result: @escaping FlutterResult) {
+    guard let arguments = args as? [String: Any?],
+          let customParameter = arguments["customParameter"] as? String? else {
+            result(FlutterError(code: "INVALID_ARGUMENTS", message: "Invalid arguments", details: nil))
+      return
+    }
+    Tapjoy.sharedTapjoyConnect().customParameter = customParameter
+    result(nil)
+  }
+
+  private func getCustomParameter(_ result: @escaping FlutterResult) {
+    result(Tapjoy.sharedTapjoyConnect().customParameter)
   }
 
   private func getCurrencyBalance(result: @escaping FlutterResult) {

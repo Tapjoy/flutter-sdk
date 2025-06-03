@@ -27,8 +27,8 @@ class _HomeWidgetState extends State<HomeWidget> {
   final TextEditingController _purchaseCurrencyController = TextEditingController(text: 'USD');
 
   bool _offerwallReadyToShow = false;
-  TJPlacement? _offerwallPlacement;
   TJEntryPoint _selectedEntryPoint = TJEntryPoint.entryPointUnknown;
+  TJLoggingLevel _loggingLevel = TJLoggingLevel.error;
   String _statusMessage = '';
 
   void setAppConnected(bool connected) {
@@ -37,20 +37,47 @@ class _HomeWidgetState extends State<HomeWidget> {
     });
   }
 
-  void offerwallReadyToShow(bool active) {
+  void setOfferwallReadyToShow(bool? active) {
     setState(() {
-      _offerwallReadyToShow = active;
+      _offerwallReadyToShow = active ?? false;
+    });
+  }
+
+  void setStatusMessage(String message) {
+    log(message);
+    setState(() {
+      _statusMessage = message;
+    });
+  }
+
+  void setLoggingLevel(TJLoggingLevel level) {
+    setState(() {
+      _loggingLevel = level;
+    });
+  }
+
+  void setEntryPoint(TJEntryPoint entryPoint) {
+    setState(() {
+      _selectedEntryPoint = entryPoint;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    setAppConnected(globals.isConnected);
-    _statusMessage =
-        globals.isConnected ? 'Tapjoy SDK Connected' : 'Click Connect to Start';
-    offerwallReadyToShow(false);
+    populateUi();
     checkAutoConnect();
+  }
+
+  void populateUi() async {
+    updateOfferwallReadyToShow();
+    setAppConnected(globals.isConnected);
+    setStatusMessage(globals.isConnected ? 'Tapjoy SDK Connected' : 'Click Connect to Start');
+    setLoggingLevel(await Tapjoy.getLoggingLevel());
+  }
+
+  void updateOfferwallReadyToShow() async {
+    setOfferwallReadyToShow(await globals.loadedPlacement?.isContentReady());
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -62,8 +89,6 @@ class _HomeWidgetState extends State<HomeWidget> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     log('Preparing SDK setting');
-    log('setDebugEnabled(true)');
-    await Tapjoy.setDebugEnabled(true);
     log('isConnected: ${await Tapjoy.isConnected()}');
   }
 
@@ -87,66 +112,80 @@ class _HomeWidgetState extends State<HomeWidget> {
 
   Future<void> initSDK() async {
     log('initSDK()');
+    if (globals.isConnected) {
+      log('SDK already connected');
+      return;
+    }
     if (Platform.isIOS) {
       trackingTransparencyRequest();
     }
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      final Map<String, dynamic> optionFlags = {};
+      final Map<String, dynamic> optionFlags = { };
+      Tapjoy.setLoggingLevel(TJLoggingLevel.debug);
       // optionFlags[TapjoyConnectFlags.user_id] = "[USER_ID]";
+      // optionFlags[TapjoyConnectFlags.logging_level] = TJLoggingLevel.debug.index;
+      Tapjoy.setCustomParameter("custom_parameter");
       await Tapjoy.connect(
         sdkKey: await getSdkKey(),
         options: optionFlags,
         onConnectSuccess: () async {
-          _updateStatusMessage('Tapjoy SDK connected');
+          setStatusMessage('Tapjoy SDK connected');
           setAppConnected(true);
+          setLoggingLevel(await Tapjoy.getLoggingLevel());
         },
         onConnectFailure: (int code, String? error) async {
-          _updateStatusMessage(
+          setStatusMessage(
               'Tapjoy connect failed: $error Error code: $code');
           setAppConnected(false);
         },
         onConnectWarning: (int code, String? warning) async {
-          _updateStatusMessage('Tapjoy connect warning: $warning Code: $code');
+          setStatusMessage('Tapjoy connect warning: $warning Code: $code');
         },
       );
     } on PlatformException {
-      _updateStatusMessage('Failed to get platform version.');
+      setStatusMessage('Failed to get platform version.');
     }
   }
 
   Future<void> loadOfferwallPlacement() async {
-    _updateStatusMessage(
+    setStatusMessage(
         'Requesting content for placement: ${_placementNameController.text}');
-
-    _offerwallPlacement = await Tapjoy.getPlacement(
+    if (await Tapjoy.getCustomParameter() != null) {
+      setStatusMessage(
+          'Custom parameter: ${await Tapjoy.getCustomParameter()}');
+    }
+    globals.loadedPlacement = await Tapjoy.getPlacement(
         placementName: _placementNameController.text,
         onRequestSuccess: (placement) async {
           var isContentAvailable = await placement.isContentAvailable();
-          _updateStatusMessage(
+          setStatusMessage(
               'onRequestSuccess for placement: ${placement.placementName}, isContentAvailable:  $isContentAvailable');
+              updateOfferwallReadyToShow();
         },
         onRequestFailure: (placement, error) {
-          _updateStatusMessage(
+          setStatusMessage(
               'onRequestFailure for placement: ${placement.placementName}, $error');
+          globals.loadedPlacement = null;
         },
         onContentReady: (placement) {
-          _updateStatusMessage(
+          setStatusMessage(
               'onContentReady for placement: ${placement.placementName}');
-          offerwallReadyToShow(true);
+          updateOfferwallReadyToShow();
         },
         onContentShow: (placement) {
-          _updateStatusMessage(
+          setStatusMessage(
               'onContentShow for placement: ${placement.placementName}');
         },
         onContentDismiss: (placement) {
-          _updateStatusMessage(
+          setStatusMessage(
               'onContentDismiss for placement: ${placement.placementName}');
-          offerwallReadyToShow(false);
+          globals.loadedPlacement = null;
+          updateOfferwallReadyToShow();
         });
     if (_selectedEntryPoint != TJEntryPoint.entryPointUnknown) {
-      _offerwallPlacement?.setEntryPoint(_selectedEntryPoint);
+      globals.loadedPlacement?.setEntryPoint(_selectedEntryPoint);
       log('setEntryPoint: ${_selectedEntryPoint.name}.');
     }
 
@@ -155,7 +194,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         final balance = int.tryParse(_currencyBalanceController.text);
         final currencyId = _currencyIdController.text;
         if (balance != null) {
-          _offerwallPlacement?.setCurrencyBalance(
+          globals.loadedPlacement?.setCurrencyBalance(
               currencyBalance: balance,
               currencyId: currencyId,
               onSuccess: (placement) {
@@ -172,7 +211,7 @@ class _HomeWidgetState extends State<HomeWidget> {
             int.tryParse(_currencyRequiredAmountController.text);
         final currencyId = _currencyIdController.text;
         if (requiredAmount != null) {
-          _offerwallPlacement?.setRequiredAmount(
+          globals.loadedPlacement?.setRequiredAmount(
               requiredAmount: requiredAmount,
               currencyId: currencyId,
               onSuccess: (placement) {
@@ -185,15 +224,15 @@ class _HomeWidgetState extends State<HomeWidget> {
       }
     }
 
-    _offerwallPlacement?.requestContent();
+    globals.loadedPlacement?.requestContent();
   }
 
   Future<void> getCurrencyBalance() async {
     await Tapjoy.getCurrencyBalance(
         onGetCurrencyBalanceSuccess: (currencyName, balance) {
-      _updateStatusMessage('$currencyName: $balance');
+      setStatusMessage('$currencyName: $balance');
     }, onGetCurrencyBalanceFailure: (error) {
-      _updateStatusMessage('getCurrencyBalance error: $error');
+      setStatusMessage('getCurrencyBalance error: $error');
     });
   }
 
@@ -202,10 +241,10 @@ class _HomeWidgetState extends State<HomeWidget> {
     await Tapjoy.spendCurrency(
         amount: amount,
         onSpendCurrencySuccess: (currencyName, balance) {
-          _updateStatusMessage('$currencyName: $balance');
+          setStatusMessage('$currencyName: $balance');
         },
         onSpendCurrencyFailure: (error) {
-          _updateStatusMessage('spendCurrency error: $error');
+          setStatusMessage('spendCurrency error: $error');
         });
   }
 
@@ -214,17 +253,17 @@ class _HomeWidgetState extends State<HomeWidget> {
     await Tapjoy.awardCurrency(
         amount: amount,
         onAwardCurrencySuccess: (currencyName, balance) {
-          _updateStatusMessage('$currencyName: $balance');
+          setStatusMessage('$currencyName: $balance');
         },
         onAwardCurrencyFailure: (error) {
-          _updateStatusMessage('awardCurrency error: $error');
+          setStatusMessage('awardCurrency error: $error');
         });
   }
 
   Future<void> purchase() async {
     final price = double.tryParse(_purchasePriceController.text) ?? 0;
     final currency = _purchaseCurrencyController.text;
-    _updateStatusMessage(
+    setStatusMessage(
         'Sent track purchase: ${formatNumber(price)} $currency');
     await Tapjoy.trackPurchase(currency, price);
   }
@@ -237,17 +276,14 @@ class _HomeWidgetState extends State<HomeWidget> {
     }
   }
 
-  void _updateStatusMessage(String message) {
-    log(message);
-    setState(() {
-      _statusMessage = message;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final ButtonStyle compactButtonStyle = ElevatedButton.styleFrom(
       padding: const EdgeInsets.symmetric(horizontal: 8),
+    );
+    final ButtonStyle segmentedControlButtonStyle = ElevatedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
     );
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -258,17 +294,16 @@ class _HomeWidgetState extends State<HomeWidget> {
                 child: Column(
                   children: [
                     Padding(
-                        padding: const EdgeInsets.only(
-                            left: 10.0, right: 10.0, bottom: 10.0),
+                        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
                         child: Text(_statusMessage)),
                     Row(
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.only(bottom: 10.0),
+                            padding: const EdgeInsets.only(bottom: 10, left: 30, right: 30),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
                               ),
                               onPressed: globals.isConnected ? null : () => initSDK(),
                               child: Text(
@@ -279,7 +314,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       child: TextField(
                         controller: _managedCurrencyController,
                         decoration: const InputDecoration(
@@ -318,7 +353,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                     Row(children: <Widget>[
                       Flexible(
                         child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                             child: TextField(
                               controller: _placementNameController,
                               decoration: const InputDecoration(
@@ -343,9 +378,8 @@ class _HomeWidgetState extends State<HomeWidget> {
                           style: compactButtonStyle,
                           onPressed: globals.isConnected && _offerwallReadyToShow
                               ? () {
-                            log('showContent ${_offerwallPlacement!.placementName}');
-                            _offerwallPlacement!.showContent();
-                            offerwallReadyToShow(false);
+                            log('showContent ${globals.loadedPlacement?.placementName}');
+                            globals.loadedPlacement?.showContent();
                           }
                               : null,
                           child: const Text('Show'),
@@ -356,7 +390,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       children: [
                         Flexible(
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
                               child: DropdownButton<TJEntryPoint>(
                                 value: _selectedEntryPoint,
                                 isExpanded: true,
@@ -369,16 +403,16 @@ class _HomeWidgetState extends State<HomeWidget> {
                                   );
                                 }).toList(),
                                 onChanged: (TJEntryPoint? newValue) {
-                                  setState(() {
-                                    _selectedEntryPoint = newValue!;
-                                  });
+                                  if (newValue != null) {
+                                    setEntryPoint(newValue);
+                                  }
                                 },
                               ),
                             )),
                       ],
                     ),
                     const Padding(
-                      padding: EdgeInsets.only(left: 10.0, top: 20.0, bottom: 10.0),
+                      padding: EdgeInsets.only(left: 20, top: 20, bottom: 10),
                       child: Align(
                         alignment: Alignment.topLeft,
                         child: Text("Currency",
@@ -387,7 +421,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
                       child: TextField(
                         controller: _currencyIdController,
                         decoration: const InputDecoration(
@@ -400,7 +434,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
                       child: TextField(
                         controller: _currencyBalanceController,
                         decoration: const InputDecoration(
@@ -413,7 +447,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
                       child: TextField(
                         controller: _currencyRequiredAmountController,
                         decoration: const InputDecoration(
@@ -430,7 +464,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       ),
                     ),
                     const Padding(
-                      padding: EdgeInsets.only(left: 10.0, top: 20.0, bottom: 10.0),
+                      padding: EdgeInsets.only(left: 20, top: 20, bottom: 10),
                       child: Align(
                         alignment: Alignment.topLeft,
                         child: Text("Purchase",
@@ -442,7 +476,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              left: 8.0, right: 8.0, bottom: 8.0),
+                              left: 20, right: 8, bottom: 8),
                           child: TextField(
                             controller: _purchasePriceController,
                             decoration: const InputDecoration(
@@ -464,7 +498,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              left: 8.0, right: 8.0, bottom: 8.0),
+                              left: 8, right: 20, bottom: 8),
                           child: TextField(
                             controller: _purchaseCurrencyController,
                             decoration: const InputDecoration(
@@ -487,9 +521,51 @@ class _HomeWidgetState extends State<HomeWidget> {
                         ),
                       ),
                     ),
+                    Row(
+                      children: [
+                        const Padding(
+                            padding: EdgeInsets.only(top: 10, left: 10, right: 4),
+                            child: Text("Logging level")),
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.only(top: 10, right: 10),
+                          child: SegmentedButton<TJLoggingLevel>(segments: const <ButtonSegment<TJLoggingLevel>>[
+                              ButtonSegment<TJLoggingLevel>(
+                                value: TJLoggingLevel.error,
+                                label: Text('Error'),
+                              ),
+                              ButtonSegment<TJLoggingLevel>(
+                                value: TJLoggingLevel.warning,
+                                label: Text('Warning'),
+                              ),
+                              ButtonSegment<TJLoggingLevel>(
+                                value: TJLoggingLevel.info,
+                                label: Text('Info'),
+                              ),
+                              ButtonSegment<TJLoggingLevel>(
+                                value: TJLoggingLevel.debug,
+                                label: Text('Debug'),
+                              ),
+                            ],
+                            selected: {_loggingLevel},
+                            showSelectedIcon: false,
+                            style: segmentedControlButtonStyle,
+                            onSelectionChanged: (Set newSelection) async {
+                              var originalLoggingLevel = await Tapjoy.getLoggingLevel();
+                              setLoggingLevel(newSelection.first);
+                              Tapjoy.setLoggingLevel(_loggingLevel);
+                              var currentLoggingLevel = await Tapjoy.getLoggingLevel();
+                              if (currentLoggingLevel != _loggingLevel) {
+                                setLoggingLevel(originalLoggingLevel);
+                              }
+                            },
+                          ),
+                        )),
+                      ],
+                    ),
                     Padding(
                       padding:
-                      const EdgeInsets.only(left: 10.0, top: 20.0, bottom: 10.0),
+                      const EdgeInsets.only(left: 10, top: 20, bottom: 10),
                       child: Align(
                         alignment: Alignment.topLeft,
                         child: Text("Version: ${Tapjoy.getPluginVersion()}"),
