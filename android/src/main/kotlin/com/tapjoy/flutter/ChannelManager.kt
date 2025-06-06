@@ -72,7 +72,7 @@ object ChannelManager : EventChannel.StreamHandler {
                             + "errorCode: $errorCode, message: $errorMessage, details: $errorDetails")
                 }
                 override fun notImplemented() {
-                    throw Error("Critical Error: invokeMethod $methodName notImplemented ")
+                    Log.w(TAG, "Warning: invokeMethod $methodName notImplemented")
                 }
             })
         }
