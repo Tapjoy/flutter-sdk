@@ -1,3 +1,10 @@
+## 14.5.0
+ - iOS SDK 14.5.0
+ - Android SDK 14.5.0
+ - Kotlin version 2.2.0.
+ - Changed throwing error to warning when invokeChannelMethod notImplemented
+ - Removed TJPlacementListener.onRequestPurchase & TJPlacementListener.onRewardRequest 
+
 ## 14.4.0
  - iOS SDK 14.4.0
  - Android SDK 14.4.0

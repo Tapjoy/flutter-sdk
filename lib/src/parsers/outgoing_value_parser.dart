@@ -10,9 +10,17 @@ class OutgoingValueParser {
   /// { 'appKey': String, 'adUnits': List<String>? }
   /// ```
   static Map<String, dynamic> connect( {required String sdkKey, Map<String, dynamic>? options}) {
+  final processedOptions = options == null
+          ? null
+          : {
+              for (final entry in options.entries)
+                entry.key: entry.value is Enum
+                    ? (entry.value as Enum).index
+                    : entry.value,
+            };
     final Map<String, dynamic> args = {
       TapjoyConstKey.sdkKey: sdkKey,
-      TapjoyConstKey.options: options
+      TapjoyConstKey.options: processedOptions
     };
     return args;
   }

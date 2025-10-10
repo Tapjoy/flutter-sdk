@@ -237,7 +237,7 @@ class _HomeWidgetState extends State<HomeWidget> {
   }
 
   Future<void> spendCurrency() async {
-    var amount = int.parse(_managedCurrencyController.text);
+    var amount = int.tryParse(_managedCurrencyController.text) ?? 0;
     await Tapjoy.spendCurrency(
         amount: amount,
         onSpendCurrencySuccess: (currencyName, balance) {
@@ -249,7 +249,7 @@ class _HomeWidgetState extends State<HomeWidget> {
   }
 
   Future<void> awardCurrency() async {
-    var amount = int.parse(_managedCurrencyController.text);
+    var amount = int.tryParse(_managedCurrencyController.text) ?? 0;
     await Tapjoy.awardCurrency(
         amount: amount,
         onAwardCurrencySuccess: (currencyName, balance) {

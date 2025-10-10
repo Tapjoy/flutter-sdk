@@ -140,11 +140,15 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
       return result.error("ERROR", "Activity is null", null)
     }
     var sdkKey = call.argument<String>("sdkKey")
-    var optionsMap = call.argument<HashMap<String, String>?>("options")
+    var optionsMap = call.argument<HashMap<String, Any?>?>("options")
     if(optionsMap == null) {
-      optionsMap = HashMap<String, String>()
+      optionsMap = HashMap<String, Any?>()
     }
-    val options = Hashtable<String, String>(optionsMap)
+    val options = Hashtable<String, Any>()
+    for ((key, value) in optionsMap) {
+      if (value == null) continue
+        options[key] = value
+    }
     TapjoyPluginAPI.setPlugin("flutter")
     Tapjoy.connect(activity!!.applicationContext, sdkKey, options, mConnectListener)
     return result.success(null)
@@ -544,14 +548,6 @@ class TapjoyOfferwallPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Li
       "onContentDismiss",
       placement.name
     )
-  }
-
-  override fun onPurchaseRequest(placement: TJPlacement?, p1: TJActionRequest?, p2: String?) {
-    // Nothing to do
-  }
-
-  override fun onRewardRequest(placement: TJPlacement?, p1: TJActionRequest?, p2: String?, p3: Int) {
-    // Nothing to do
   }
 
   override fun onClick(placement: TJPlacement?) {
