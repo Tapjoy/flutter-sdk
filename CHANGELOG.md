@@ -1,3 +1,7 @@
+## 14.6.0
+ - iOS SDK 14.6.0
+ - Android SDK 14.6.0
+
 ## 14.5.0
  - iOS SDK 14.5.0
  - Android SDK 14.5.0
